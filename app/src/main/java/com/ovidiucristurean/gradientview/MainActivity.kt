@@ -15,7 +15,22 @@ class MainActivity : AppCompatActivity() {
         gradientView = findViewById(R.id.gradientView)
         button = findViewById(R.id.gradientButton)
         button.setOnClickListener {
-            gradientView.changeGradient()
+            //gradientView.updateGradient()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        gradientView.startAnimation()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        gradientView.stopAnimation()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        gradientView.stopAnimation()
     }
 }
