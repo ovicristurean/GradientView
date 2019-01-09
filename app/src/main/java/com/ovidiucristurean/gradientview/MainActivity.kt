@@ -13,10 +13,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         gradientView = findViewById(R.id.gradientView)
-        button = findViewById(R.id.gradientButton)
-        button.setOnClickListener {
+        //button = findViewById(R.id.gradientButton)
+        //button.setOnClickListener {
             //gradientView.updateGradient()
-        }
+       // }
     }
 
     override fun onStart() {

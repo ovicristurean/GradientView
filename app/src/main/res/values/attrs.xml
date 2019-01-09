@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="GradientView">
-        <attr name="buttonColor" format="integer" />
-        <attr name="text" format="string" />
+        <attr name="colorStart" format="color" />
+        <attr name="colorCenter" format="color" />
+        <attr name="colorEnd" format="color" />
     </declare-styleable>
 </resources>

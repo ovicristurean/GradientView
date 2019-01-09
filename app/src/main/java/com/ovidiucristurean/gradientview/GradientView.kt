@@ -11,23 +11,35 @@ import android.graphics.drawable.shapes.RectShape
 import android.hardware.SensorManager
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import com.ovidiucristurean.gradientview.exception.GradientViewInflateException
 import com.ovidiucristurean.gradientview.rotationlistener.RotationChangeListener
 import com.ovidiucristurean.gradientview.rotationlistener.RotationVectorCollector
 
 class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLayout(context, attributeSet), RotationChangeListener {
-    private val gradientInit = intArrayOf(Color.parseColor("#FF00FF00"), Color.WHITE, Color.parseColor("#c4ff00"))
-    private var gradientDrawable = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, gradientInit)
+    private val gradientInit: IntArray
+    private var gradientDrawable: GradientDrawable
     private val view = View.inflate(context, R.layout.gradient_view, this)
     private var sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val handlerThread = HandlerThread("collectionThread")
     private var rotationVectorCollector: RotationVectorCollector
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     init {
         val attributes = context.obtainStyledAttributes(attributeSet, R.styleable.GradientView)
+        try {
+            gradientInit = intArrayOf(Color.parseColor(attributes.getString(R.styleable.GradientView_colorStart)),
+                    Color.parseColor(attributes.getString(R.styleable.GradientView_colorCenter)),
+                    Color.parseColor(attributes.getString(R.styleable.GradientView_colorEnd)))
+        } catch (e: RuntimeException) {
+            throw GradientViewInflateException("You need to specify startColor, centerColor and endColor in GradientView XML or programmatically")
+        }
+
+        gradientDrawable = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, gradientInit)
         view.background = gradientDrawable
         attributes.recycle()
 
@@ -52,18 +64,20 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
     }
 
     private fun updateGradient(angle: Float) {
-        val sf: ShapeDrawable.ShaderFactory = object : ShapeDrawable.ShaderFactory() {
-            override fun resize(width: Int, height: Int): Shader {
-                return LinearGradient(0f, 0f, width.toFloat(), height.toFloat(),
-                        gradientInit,
-                        floatArrayOf(0f, angle, 1f), Shader.TileMode.MIRROR)
+        mainHandler.post {
+            val sf: ShapeDrawable.ShaderFactory = object : ShapeDrawable.ShaderFactory() {
+                override fun resize(width: Int, height: Int): Shader {
+                    return LinearGradient(0f, 0f, width.toFloat(), height.toFloat(),
+                            gradientInit,
+                            floatArrayOf(0f, angle, 1f), Shader.TileMode.MIRROR)
+                }
             }
-        }
 
-        val p = PaintDrawable()
-        p.shape = RectShape()
-        p.shaderFactory = sf
-        background = p
+            val p = PaintDrawable()
+            p.shape = RectShape()
+            p.shaderFactory = sf
+            background = p
+        }
     }
 
     private fun getCollectionHandler(): Handler {
