@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         gradientView = findViewById(R.id.gradientView)
-        gradientView.setCenterColor(Color.parseColor("#ffffff"))
+        //gradientView.setCenterColor(Color.parseColor("#ffffff"))
         //button = findViewById(R.id.gradientButton)
         //button.setOnClickListener {
         //gradientView.updateGradient()

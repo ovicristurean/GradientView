@@ -3,24 +3,21 @@ package com.ovidiucristurean.gradientview
 import android.content.Context
 import android.content.res.TypedArray
 import android.graphics.Color
-import android.graphics.LinearGradient
-import android.graphics.Shader
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.PaintDrawable
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.RectShape
 import android.hardware.SensorManager
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import com.ovidiucristurean.gradientview.exception.GradientViewInflateException
 import com.ovidiucristurean.gradientview.math.Mapper
 import com.ovidiucristurean.gradientview.math.SimpleLinearMapper
 import com.ovidiucristurean.gradientview.rotationlistener.RotationChangeListener
 import com.ovidiucristurean.gradientview.rotationlistener.RotationVectorCollector
+import com.ovidiucristurean.gradientview.shader.PaintDrawableFactory
 
 class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLayout(context, attributeSet), RotationChangeListener {
     private var gradientColors = intArrayOf(0, 0, 0)
@@ -32,6 +29,7 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
     private val mainHandler = Handler(Looper.getMainLooper())
     private val attributes: TypedArray = context.obtainStyledAttributes(attributeSet, R.styleable.GradientView)
     private val mapper: Mapper<Double> = SimpleLinearMapper()
+    private val paintDrawableFactory = PaintDrawableFactory()
 
     private var isStartColorSet = false
     private var isCenterColorSet = false
@@ -54,25 +52,17 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
 
     fun startAnimation() {
         try {
-            val startColor = if (isStartColorSet) {
-                gradientColors[0]
-            } else {
-                Color.parseColor(attributes.getString(R.styleable.GradientView_colorStart))
+            if (!isStartColorSet) {
+                gradientColors[0] = Color.parseColor(attributes.getString(R.styleable.GradientView_colorStart))
+            }
+            if (!isCenterColorSet) {
+                gradientColors[1] = Color.parseColor(attributes.getString(R.styleable.GradientView_colorCenter))
+            }
+            if (!isEndColorSet) {
+                gradientColors[2] = Color.parseColor(attributes.getString(R.styleable.GradientView_colorEnd))
             }
 
-            val centerColor = if (isCenterColorSet) {
-                gradientColors[1]
-            } else {
-                Color.parseColor(attributes.getString(R.styleable.GradientView_colorCenter))
-            }
-
-            val endColor = if (isEndColorSet) {
-                gradientColors[2]
-            } else {
-                Color.parseColor(attributes.getString(R.styleable.GradientView_colorEnd))
-            }
-
-            gradientColors = intArrayOf(startColor, centerColor, endColor)
+            Log.d("TAG", "Colors are: ${gradientColors[0]}, ${gradientColors[1]}, ${gradientColors[2]}")
         } catch (e: RuntimeException) {
             throw GradientViewInflateException("You need to specify startColor, centerColor and endColor in GradientView XML or programmatically")
         }
@@ -92,24 +82,10 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
     }
 
     override fun onRotationChanged(angle: Float) {
-        //map the [-pi,pi] received value to a [0,1]
-        updateGradient(mapper.map(angle.toDouble(), -Math.PI, Math.PI, 0.0, 1.0).toFloat())
-    }
-
-    private fun updateGradient(angle: Float) {
         mainHandler.post {
-            val sf: ShapeDrawable.ShaderFactory = object : ShapeDrawable.ShaderFactory() {
-                override fun resize(width: Int, height: Int): Shader {
-                    return LinearGradient(0f, 0f, width.toFloat(), height.toFloat(),
-                            gradientColors,
-                            floatArrayOf(0f, angle, 1f), Shader.TileMode.MIRROR)
-                }
-            }
-
-            val p = PaintDrawable()
-            p.shape = RectShape()
-            p.shaderFactory = sf
-            background = p
+            //map the [-pi,pi] received value to a value in the [0,1] interval
+            val transformedAngle = mapper.map(angle.toDouble(), -Math.PI, Math.PI, 0.0, 1.0).toFloat()
+            background = paintDrawableFactory.getPaintDrawable(gradientColors, transformedAngle, 0f, 0f, width.toFloat(), height.toFloat())
         }
     }
 
