@@ -12,8 +12,18 @@
         android:layout_height="match_parent"
         android:background="@color/colorPrimaryDark"
         app:colorCenter="#ffffff"
-        app:colorEnd="#ffa751"
-        app:colorStart="#ffe259">
+        app:colorEnd="#4286f4"
+        app:colorStart="#373B44">
+
+        <ImageView
+            android:layout_width="300dp"
+            android:layout_height="400dp"
+            android:src="@drawable/ederson_custom"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.495" />
 
     </com.ovidiucristurean.gradientview.GradientView>
 
