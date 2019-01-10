@@ -1,6 +1,7 @@
 package com.ovidiucristurean.gradientview
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Shader
@@ -21,38 +22,71 @@ import com.ovidiucristurean.gradientview.rotationlistener.RotationChangeListener
 import com.ovidiucristurean.gradientview.rotationlistener.RotationVectorCollector
 
 class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLayout(context, attributeSet), RotationChangeListener {
-    private val gradientInit: IntArray
-    private var gradientDrawable: GradientDrawable
+    private var gradientColors = intArrayOf(0,0,0)
+    private var gradientDrawable: GradientDrawable? = null
     private val view = View.inflate(context, R.layout.gradient_view, this)
     private var sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val handlerThread = HandlerThread("collectionThread")
-    private var rotationVectorCollector: RotationVectorCollector
+    private var rotationVectorCollector: RotationVectorCollector? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val attributes: TypedArray = context.obtainStyledAttributes(attributeSet, R.styleable.GradientView)
 
-    init {
-        val attributes = context.obtainStyledAttributes(attributeSet, R.styleable.GradientView)
+    private var isStartColorSet = false
+    private var isCenterColorSet = false
+    private var isEndColorSet = false
+
+    fun setStartColor(color: Int) {
+        gradientColors[0] = color
+        isStartColorSet = true
+    }
+
+    fun setCenterColor(color: Int) {
+        gradientColors[1] = color
+        isCenterColorSet = true
+    }
+
+    fun setEndColor(color: Int) {
+        gradientColors[2] = color
+        isEndColorSet = true
+    }
+
+    fun startAnimation() {
         try {
-            gradientInit = intArrayOf(Color.parseColor(attributes.getString(R.styleable.GradientView_colorStart)),
-                    Color.parseColor(attributes.getString(R.styleable.GradientView_colorCenter)),
-                    Color.parseColor(attributes.getString(R.styleable.GradientView_colorEnd)))
+            val startColor = if (isStartColorSet) {
+                gradientColors[0]
+            } else {
+                Color.parseColor(attributes.getString(R.styleable.GradientView_colorStart))
+            }
+
+            val centerColor = if (isCenterColorSet) {
+                gradientColors[1]
+            } else {
+                Color.parseColor(attributes.getString(R.styleable.GradientView_colorCenter))
+            }
+
+            val endColor = if (isEndColorSet) {
+                gradientColors[2]
+            } else {
+                Color.parseColor(attributes.getString(R.styleable.GradientView_colorEnd))
+            }
+
+            gradientColors = intArrayOf(startColor, centerColor, endColor)
         } catch (e: RuntimeException) {
             throw GradientViewInflateException("You need to specify startColor, centerColor and endColor in GradientView XML or programmatically")
         }
-
-        gradientDrawable = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, gradientInit)
+        gradientDrawable = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, gradientColors)
         view.background = gradientDrawable
         attributes.recycle()
 
         rotationVectorCollector = RotationVectorCollector(sensorManager, getCollectionHandler())
-        rotationVectorCollector.setRotationChangeListener(this)
-    }
-
-    fun startAnimation() {
-        rotationVectorCollector.registerForUpdates()
+        rotationVectorCollector?.let {
+            it.setRotationChangeListener(this)
+            it.registerForUpdates()
+        }
     }
 
     fun stopAnimation() {
-        rotationVectorCollector.unregisterFromUpdates()
+        rotationVectorCollector?.unregisterFromUpdates()
     }
 
     override fun onRotationChanged(angle: Float) {
@@ -68,7 +102,7 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
             val sf: ShapeDrawable.ShaderFactory = object : ShapeDrawable.ShaderFactory() {
                 override fun resize(width: Int, height: Int): Shader {
                     return LinearGradient(0f, 0f, width.toFloat(), height.toFloat(),
-                            gradientInit,
+                            gradientColors,
                             floatArrayOf(0f, angle, 1f), Shader.TileMode.MIRROR)
                 }
             }
