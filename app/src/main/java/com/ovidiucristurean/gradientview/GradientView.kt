@@ -15,14 +15,15 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import com.ovidiucristurean.gradientview.exception.GradientViewInflateException
+import com.ovidiucristurean.gradientview.math.Mapper
+import com.ovidiucristurean.gradientview.math.SimpleLinearMapper
 import com.ovidiucristurean.gradientview.rotationlistener.RotationChangeListener
 import com.ovidiucristurean.gradientview.rotationlistener.RotationVectorCollector
 
 class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLayout(context, attributeSet), RotationChangeListener {
-    private var gradientColors = intArrayOf(0,0,0)
+    private var gradientColors = intArrayOf(0, 0, 0)
     private var gradientDrawable: GradientDrawable? = null
     private val view = View.inflate(context, R.layout.gradient_view, this)
     private var sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -30,6 +31,7 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
     private var rotationVectorCollector: RotationVectorCollector? = null
     private val mainHandler = Handler(Looper.getMainLooper())
     private val attributes: TypedArray = context.obtainStyledAttributes(attributeSet, R.styleable.GradientView)
+    private val mapper: Mapper<Double> = SimpleLinearMapper()
 
     private var isStartColorSet = false
     private var isCenterColorSet = false
@@ -90,11 +92,8 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
     }
 
     override fun onRotationChanged(angle: Float) {
-        //map the [-pi,pi] received value to a [0,1] interval with the formula:
-        //[A,B]->[a,b] => (val-A)*(b-a)/(B-A)+a
-        val transformedValue = (angle + Math.PI) * (1 - 0) / (Math.PI + Math.PI) + 0
-        Log.d("TAG", "Transformed value ${transformedValue.round(5)}, for angle $angle")
-        updateGradient(transformedValue.toFloat())
+        //map the [-pi,pi] received value to a [0,1]
+        updateGradient(mapper.map(angle.toDouble(), -Math.PI, Math.PI, 0.0, 1.0).toFloat())
     }
 
     private fun updateGradient(angle: Float) {
