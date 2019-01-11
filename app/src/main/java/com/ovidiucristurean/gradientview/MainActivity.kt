@@ -1,11 +1,10 @@
 package com.ovidiucristurean.gradientview
 
+import android.graphics.drawable.shapes.OvalShape
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.widget.Button
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var button: Button
     private lateinit var gradientView: GradientView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,15 +12,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         gradientView = findViewById(R.id.gradientView)
-        //gradientView.setCenterColor(Color.parseColor("#ffffff"))
-        //button = findViewById(R.id.gradientButton)
-        //button.setOnClickListener {
-        //gradientView.updateGradient()
-        // }
     }
 
     override fun onStart() {
         super.onStart()
+        gradientView.setShape(OvalShape())
         gradientView.startAnimation()
     }
 

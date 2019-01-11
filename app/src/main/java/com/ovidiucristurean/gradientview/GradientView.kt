@@ -3,15 +3,16 @@ package com.ovidiucristurean.gradientview
 import android.content.Context
 import android.content.res.TypedArray
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.shapes.ArcShape
+import android.graphics.drawable.shapes.OvalShape
+import android.graphics.drawable.shapes.RectShape
+import android.graphics.drawable.shapes.Shape
 import android.hardware.SensorManager
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
-import android.util.Log
-import android.view.View
 import com.ovidiucristurean.gradientview.exception.GradientViewInflateException
 import com.ovidiucristurean.gradientview.math.Mapper
 import com.ovidiucristurean.gradientview.math.SimpleLinearMapper
@@ -21,15 +22,14 @@ import com.ovidiucristurean.gradientview.shader.PaintDrawableFactory
 
 class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLayout(context, attributeSet), RotationChangeListener {
     private var gradientColors = intArrayOf(0, 0, 0)
-    private var gradientDrawable: GradientDrawable? = null
-    private val view = View.inflate(context, R.layout.gradient_view, this)
     private var sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private val handlerThread = HandlerThread("collectionThread")
     private var rotationVectorCollector: RotationVectorCollector? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val collectionHandler = getCollectionHandler()
     private val attributes: TypedArray = context.obtainStyledAttributes(attributeSet, R.styleable.GradientView)
     private val mapper: Mapper<Double> = SimpleLinearMapper()
-    private val paintDrawableFactory = PaintDrawableFactory()
+    //TODO retrieve the desired shape from attributes
+    private val paintDrawableFactory = PaintDrawableFactory(getGradientShape())
 
     private var isStartColorSet = false
     private var isCenterColorSet = false
@@ -50,6 +50,10 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
         isEndColorSet = true
     }
 
+    fun setShape(shape: Shape) {
+        paintDrawableFactory.setShape(shape)
+    }
+
     fun startAnimation() {
         try {
             if (!isStartColorSet) {
@@ -58,19 +62,13 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
             if (!isCenterColorSet) {
                 gradientColors[1] = Color.parseColor(attributes.getString(R.styleable.GradientView_colorCenter))
             }
-            if (!isEndColorSet) {
+            if (!isEndColorSet)
                 gradientColors[2] = Color.parseColor(attributes.getString(R.styleable.GradientView_colorEnd))
-            }
-
-            Log.d("TAG", "Colors are: ${gradientColors[0]}, ${gradientColors[1]}, ${gradientColors[2]}")
         } catch (e: RuntimeException) {
             throw GradientViewInflateException("You need to specify startColor, centerColor and endColor in GradientView XML or programmatically, ${e.message}")
         }
-        gradientDrawable = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, gradientColors)
-        view.background = gradientDrawable
-        attributes.recycle()
 
-        rotationVectorCollector = RotationVectorCollector(sensorManager, getCollectionHandler())
+        rotationVectorCollector = RotationVectorCollector(sensorManager, collectionHandler)
         rotationVectorCollector?.let {
             it.setRotationChangeListener(this)
             it.registerForUpdates()
@@ -90,13 +88,20 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
     }
 
     private fun getCollectionHandler(): Handler {
+        val handlerThread = HandlerThread("collectionThread")
         handlerThread.start()
         return Handler(handlerThread.looper)
     }
 
-    private fun Double.round(decimals: Int): Double {
-        var multiplier = 1.0
-        repeat(decimals) { multiplier *= 10 }
-        return (kotlin.math.round(this * multiplier) / multiplier)
+    /**
+     * default shape is rectangular
+     */
+    private fun getGradientShape(): Shape {
+        return when (attributes.getInt(R.styleable.GradientView_shape, 9)) {
+            0 -> RectShape()
+            1 -> OvalShape()
+            2 -> ArcShape(45F, 180F)
+            else -> RectShape()
+        }
     }
 }

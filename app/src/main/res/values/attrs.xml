@@ -4,5 +4,12 @@
         <attr name="colorStart" format="color" />
         <attr name="colorCenter" format="color" />
         <attr name="colorEnd" format="color" />
+        <attr name="shape" format="enum">
+            <enum name="rectangle" value="0" />
+            <enum name="oval" value="1" />
+            <enum name="arc" value="2" />
+            <enum name="arc_angle" value="3" />
+            <enum name="arc_sweep_angle" value="4" />
+        </attr>
     </declare-styleable>
 </resources>

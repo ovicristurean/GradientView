@@ -44,11 +44,11 @@
             android:background="@android:color/white"
             android:text="A"
             app:layout_constraintEnd_toStartOf="@+id/label_b"
+            app:layout_constraintHeight_percent="0.5"
             app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintHorizontal_weight="3"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintHeight_percent="0.5"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/label_b"
@@ -56,11 +56,11 @@
             android:layout_height="0dp"
             android:background="@android:color/darker_gray"
             android:text="B"
+            app:layout_constraintBottom_toBottomOf="@id/label_a"
             app:layout_constraintEnd_toStartOf="@+id/label_c"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@id/label_a"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/label_a"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/label_c"
@@ -68,11 +68,11 @@
             android:layout_height="0dp"
             android:background="@android:color/black"
             android:text="C"
+            app:layout_constraintBottom_toBottomOf="@id/label_a"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="2"
             app:layout_constraintStart_toEndOf="@id/label_b"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/label_a"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -80,8 +80,8 @@
             android:background="@android:color/holo_orange_dark"
             android:text="Belowwwwww"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/label_a"
-            app:layout_constraintEnd_toEndOf="@id/label_a"/>
+            app:layout_constraintEnd_toEndOf="@id/label_a"
+            app:layout_constraintTop_toBottomOf="@+id/label_a" />
 
     </android.support.constraint.ConstraintLayout>
 

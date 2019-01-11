@@ -5,9 +5,9 @@ import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.PaintDrawable
 import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.RectShape
+import android.graphics.drawable.shapes.Shape
 
-class PaintDrawableFactory {
+class PaintDrawableFactory(private var shape: Shape) {
 
     fun getPaintDrawable(gradientColors: IntArray, angle: Float): Drawable {
         val sf: ShapeDrawable.ShaderFactory = object : ShapeDrawable.ShaderFactory() {
@@ -19,9 +19,13 @@ class PaintDrawableFactory {
         }
 
         val paintDrawable = PaintDrawable()
-        paintDrawable.shape = RectShape()
+        paintDrawable.shape = shape
         paintDrawable.shaderFactory = sf
 
         return paintDrawable
+    }
+
+    fun setShape(shape: Shape) {
+        this.shape = shape
     }
 }
