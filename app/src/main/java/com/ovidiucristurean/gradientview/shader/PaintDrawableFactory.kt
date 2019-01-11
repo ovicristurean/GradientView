@@ -9,10 +9,10 @@ import android.graphics.drawable.shapes.RectShape
 
 class PaintDrawableFactory {
 
-    fun getPaintDrawable(gradientColors: IntArray, angle: Float, xStart: Float, yStart: Float, xEnd: Float, yEnd: Float): Drawable {
+    fun getPaintDrawable(gradientColors: IntArray, angle: Float): Drawable {
         val sf: ShapeDrawable.ShaderFactory = object : ShapeDrawable.ShaderFactory() {
             override fun resize(width: Int, height: Int): Shader {
-                return LinearGradient(xStart, yStart, width.toFloat(), height.toFloat(),
+                return LinearGradient(0f, 0f, width.toFloat(), height.toFloat(),
                         gradientColors,
                         floatArrayOf(0f, angle, 1f), Shader.TileMode.MIRROR)
             }

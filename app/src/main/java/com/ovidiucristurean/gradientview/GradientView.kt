@@ -64,7 +64,7 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
 
             Log.d("TAG", "Colors are: ${gradientColors[0]}, ${gradientColors[1]}, ${gradientColors[2]}")
         } catch (e: RuntimeException) {
-            throw GradientViewInflateException("You need to specify startColor, centerColor and endColor in GradientView XML or programmatically")
+            throw GradientViewInflateException("You need to specify startColor, centerColor and endColor in GradientView XML or programmatically, ${e.message}")
         }
         gradientDrawable = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, gradientColors)
         view.background = gradientDrawable
@@ -85,7 +85,7 @@ class GradientView(context: Context, attributeSet: AttributeSet) : ConstraintLay
         mainHandler.post {
             //map the [-pi,pi] received value to a value in the [0,1] interval
             val transformedAngle = mapper.map(angle.toDouble(), -Math.PI, Math.PI, 0.0, 1.0).toFloat()
-            background = paintDrawableFactory.getPaintDrawable(gradientColors, transformedAngle, 0f, 0f, width.toFloat(), height.toFloat())
+            background = paintDrawableFactory.getPaintDrawable(gradientColors, transformedAngle)
         }
     }
 
